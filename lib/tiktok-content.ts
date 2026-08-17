@@ -1,6 +1,7 @@
 import "server-only"
 import { cookies } from "next/headers"
 import { getContentClientCredentials } from "@/lib/settings-store"
+import { resolveRedirectUri } from "@/lib/redirect-uri"
 
 /**
  * Cliente server-side para o TikTok Content Posting API / Login Kit (OAuth v2).
@@ -41,20 +42,10 @@ export async function getContentCredentials() {
   return { clientKey, clientSecret, redirectUri }
 }
 
-async function resolveRedirectUri(explicit?: string) {
+async function resolveContentRedirectUri(explicit?: string) {
   const { redirectUri } = await getContentCredentials()
   const value = explicit ?? redirectUri
-  if (!value) return undefined
-  try {
-    const url = new URL(value)
-    if (url.protocol !== "http:" && url.protocol !== "https:") return undefined
-    if (url.searchParams.has("redirect_uri") || value.includes("/auth/authorize")) {
-      return undefined
-    }
-    return value
-  } catch {
-    return undefined
-  }
+  return resolveRedirectUri(value)
 }
 
 /** Monta a URL de autorizacao v2 (client_key). */
@@ -71,7 +62,7 @@ export async function buildContentAuthUrl(state: string, redirectUri: string) {
 }
 
 export async function getConfiguredRedirectUri() {
-  return resolveRedirectUri()
+  return resolveContentRedirectUri()
 }
 
 export type ContentTokenResponse = {

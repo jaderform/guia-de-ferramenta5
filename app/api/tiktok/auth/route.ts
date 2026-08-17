@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { buildAuthUrl, oauthStateCookieName } from "@/lib/tiktok-api"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const origin = new URL(request.url).origin
     const state = crypto.randomUUID()
-    const url = await buildAuthUrl(state)
+    const url = await buildAuthUrl(state, origin)
     const res = NextResponse.redirect(url)
     res.cookies.set(oauthStateCookieName, state, {
       httpOnly: true,

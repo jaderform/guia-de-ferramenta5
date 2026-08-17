@@ -1,6 +1,7 @@
 import "server-only"
 import { cookies } from "next/headers"
 import { getMarketingCredentials } from "@/lib/settings-store"
+import { resolveRedirectUri } from "@/lib/redirect-uri"
 
 /**
  * Cliente server-side para a API oficial do TikTok for Business (Marketing API v1.3).
@@ -25,34 +26,14 @@ export async function getAppCredentials() {
   return { appId, secret, redirectUri }
 }
 
-/**
- * Considera valido apenas um redirect URI "limpo" (http/https e sem uma URL
- * aninhada dentro dele). Isso evita quebrar o fluxo caso a env var tenha sido
- * preenchida com a URL de autorizacao inteira do painel por engano.
- */
-function sanitizeRedirectUri(value?: string) {
-  if (!value) return undefined
-  try {
-    const url = new URL(value)
-    if (url.protocol !== "http:" && url.protocol !== "https:") return undefined
-    // Se contem redirect_uri aninhado, foi colada a URL de autorizacao inteira.
-    if (url.searchParams.has("redirect_uri") || value.includes("portal/auth")) {
-      return undefined
-    }
-    return value
-  } catch {
-    return undefined
-  }
-}
-
 /** Monta a URL de autorizacao do portal do TikTok. */
-export async function buildAuthUrl(state: string) {
+export async function buildAuthUrl(state: string, origin?: string) {
   const { appId, redirectUri } = await getAppCredentials()
   const params = new URLSearchParams({
     app_id: appId,
     state,
   })
-  const cleanRedirect = sanitizeRedirectUri(redirectUri)
+  const cleanRedirect = resolveRedirectUri(redirectUri, origin)
   if (cleanRedirect) params.set("redirect_uri", cleanRedirect)
   return `${TIKTOK_AUTH_PORTAL}?${params.toString()}`
 }
