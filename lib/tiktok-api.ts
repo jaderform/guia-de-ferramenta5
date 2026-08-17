@@ -186,22 +186,11 @@ export async function createAdvertiserAccount(
       currency: payload.currency,
       timezone: payload.timezone,
     },
-    customer_info: {
-      registered_area: payload.registeredArea,
-      company: {
-        company_name: payload.companyName,
-        company_email: payload.companyEmail,
-        company_phone: payload.companyPhone,
-        company_address: payload.companyAddress,
-        company_city: payload.companyCity,
-        company_state: payload.companyState,
-        company_zip_code: payload.companyZipCode,
-        company_country: payload.registeredArea,
-      },
+    contact_info: {
+      name: payload.contactName,
+      email: payload.contactEmail,
+      phone: payload.contactPhone,
     },
-  }
-  if (payload.licenseNo) {
-    body.qualification_info = { license_no: payload.licenseNo }
   }
   return tiktokFetch<{ advertiser_id: string }>("/bc/advertiser/create/", {
     method: "POST",
@@ -230,15 +219,10 @@ export type CreateAdvertiserPayload = {
   name: string
   currency: string
   timezone: string
-  registeredArea: string
-  licenseNo?: string
-  companyName: string
-  companyEmail: string
-  companyPhone: string
-  companyAddress: string
-  companyCity: string
-  companyState: string
-  companyZipCode: string
+  registeredArea?: string
+  contactName?: string
+  contactEmail?: string
+  contactPhone?: string
 }
 
 export type TikTokFinanceSnapshot = {

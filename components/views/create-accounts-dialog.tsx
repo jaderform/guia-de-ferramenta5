@@ -41,14 +41,6 @@ const TIMEZONES = [
   "Europe/London",
   "Europe/Lisbon",
 ]
-const AREAS = [
-  { code: "BR", label: "Brasil" },
-  { code: "US", label: "Estados Unidos" },
-  { code: "MX", label: "México" },
-  { code: "PT", label: "Portugal" },
-  { code: "GB", label: "Reino Unido" },
-]
-
 export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) {
   const [open, setOpen] = useState(false)
   const { businessCenters, error: bcError, isLoading: bcLoading } = useBusinessCenters(open)
@@ -58,15 +50,9 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
   const [bcId, setBcId] = useState("")
   const [currency, setCurrency] = useState("BRL")
   const [timezone, setTimezone] = useState("America/Sao_Paulo")
-  const [registeredArea, setRegisteredArea] = useState("BR")
-  const [licenseNo, setLicenseNo] = useState("")
-  const [companyName, setCompanyName] = useState("")
-  const [companyEmail, setCompanyEmail] = useState("")
-  const [companyPhone, setCompanyPhone] = useState("")
-  const [companyAddress, setCompanyAddress] = useState("")
-  const [companyCity, setCompanyCity] = useState("")
-  const [companyState, setCompanyState] = useState("")
-  const [companyZipCode, setCompanyZipCode] = useState("")
+  const [contactName, setContactName] = useState("")
+  const [contactEmail, setContactEmail] = useState("")
+  const [contactPhone, setContactPhone] = useState("")
 
   const [submitting, setSubmitting] = useState(false)
   const [results, setResults] = useState<CreateResult[] | null>(null)
@@ -96,15 +82,9 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
           namePrefix,
           currency,
           timezone,
-          registeredArea,
-          licenseNo,
-          companyName,
-          companyEmail,
-          companyPhone,
-          companyAddress,
-          companyCity,
-          companyState,
-          companyZipCode,
+          contactName,
+          contactEmail,
+          contactPhone,
         }),
       })
       const json = await res.json()
@@ -284,50 +264,14 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Field>
-                  <FieldLabel>País de registro</FieldLabel>
-                  <Select
-                    value={registeredArea}
-                    onValueChange={(v) => setRegisteredArea(v as string)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {AREAS.map((a) => (
-                          <SelectItem key={a.code} value={a.code}>
-                            {a.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="license">CNPJ / Licença (opcional)</FieldLabel>
-                  <Input
-                    id="license"
-                    value={licenseNo}
-                    onChange={(e) => setLicenseNo(e.target.value)}
-                    placeholder="00.000.000/0001-00"
-                  />
-                </Field>
-              </div>
-
               <div className="border-t pt-4">
-                <p className="mb-3 text-sm font-medium">Dados da empresa</p>
+                <p className="mb-3 text-sm font-medium">Contato (opcional)</p>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field><FieldLabel htmlFor="company-name">Nome da empresa</FieldLabel><Input id="company-name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required /></Field>
-                  <Field><FieldLabel htmlFor="company-email">E-mail</FieldLabel><Input id="company-email" type="email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} required /></Field>
-                  <Field><FieldLabel htmlFor="company-phone">Telefone</FieldLabel><Input id="company-phone" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} required /></Field>
-                  <Field><FieldLabel htmlFor="company-zip">CEP</FieldLabel><Input id="company-zip" value={companyZipCode} onChange={(e) => setCompanyZipCode(e.target.value)} required /></Field>
-                  <Field className="col-span-2"><FieldLabel htmlFor="company-address">Endereço</FieldLabel><Input id="company-address" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} required /></Field>
-                  <Field><FieldLabel htmlFor="company-city">Cidade</FieldLabel><Input id="company-city" value={companyCity} onChange={(e) => setCompanyCity(e.target.value)} required /></Field>
-                  <Field><FieldLabel htmlFor="company-state">Estado</FieldLabel><Input id="company-state" value={companyState} onChange={(e) => setCompanyState(e.target.value)} required /></Field>
+                  <Field><FieldLabel htmlFor="contact-name">Nome</FieldLabel><Input id="contact-name" value={contactName} onChange={(e) => setContactName(e.target.value)} /></Field>
+                  <Field><FieldLabel htmlFor="contact-email">E-mail</FieldLabel><Input id="contact-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} /></Field>
+                  <Field className="col-span-2"><FieldLabel htmlFor="contact-phone">Telefone</FieldLabel><Input id="contact-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} /></Field>
                 </div>
-                <FieldDescription className="mt-2">Esses dados são exigidos pelo TikTok para criar contas dentro do Business Center.</FieldDescription>
+                <FieldDescription className="mt-2">O nome da empresa, país e informações de cadastro são herdados do Business Center selecionado.</FieldDescription>
               </div>
 
               {formError && (
