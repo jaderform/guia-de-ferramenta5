@@ -11,6 +11,13 @@ type Body = {
   timezone?: string
   registeredArea?: string
   licenseNo?: string
+  companyName?: string
+  companyEmail?: string
+  companyPhone?: string
+  companyAddress?: string
+  companyCity?: string
+  companyState?: string
+  companyZipCode?: string
 }
 
 export async function POST(request: Request) {
@@ -34,10 +41,33 @@ export async function POST(request: Request) {
     timezone = "America/Sao_Paulo",
     registeredArea = "BR",
     licenseNo,
+    companyName,
+    companyEmail,
+    companyPhone,
+    companyAddress,
+    companyCity,
+    companyState,
+    companyZipCode,
   } = body
 
   if (!bcId) {
     return NextResponse.json({ error: "Selecione um Business Center" }, { status: 400 })
+  }
+
+  const company = {
+    name: String(companyName ?? "").trim(),
+    email: String(companyEmail ?? "").trim(),
+    phone: String(companyPhone ?? "").trim(),
+    address: String(companyAddress ?? "").trim(),
+    city: String(companyCity ?? "").trim(),
+    state: String(companyState ?? "").trim(),
+    zipCode: String(companyZipCode ?? "").trim(),
+  }
+  if (Object.values(company).some((value) => !value)) {
+    return NextResponse.json(
+      { error: "Preencha todos os dados da empresa: nome, e-mail, telefone, endereço, cidade, estado e CEP." },
+      { status: 400 },
+    )
   }
 
   // Validacao server-side da quantidade (inteiro entre 1 e MAX_ACCOUNTS).
@@ -70,6 +100,13 @@ export async function POST(request: Request) {
         timezone,
         registeredArea,
         licenseNo: licenseNo?.trim() || undefined,
+        companyName: company.name,
+        companyEmail: company.email,
+        companyPhone: company.phone,
+        companyAddress: company.address,
+        companyCity: company.city,
+        companyState: company.state,
+        companyZipCode: company.zipCode,
       })
       results.push({ name, success: true, advertiser_id: data.advertiser_id })
     } catch (err) {

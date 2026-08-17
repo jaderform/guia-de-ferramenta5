@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { PLANS, formatCurrency } from '@/lib/tiktok-data'
 import { cn } from '@/lib/utils'
+import { TikTokFinancePanel } from '@/components/views/tiktok-finance-panel'
 
 const CURRENT_PLAN = 'pro'
 
@@ -54,6 +55,8 @@ export function BillingView() {
           </div>
         </CardContent>
       </Card>
+
+      <TikTokFinancePanel />
 
       <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {PLANS.map((plan) => {

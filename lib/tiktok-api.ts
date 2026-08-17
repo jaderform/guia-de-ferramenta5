@@ -188,9 +188,18 @@ export async function createAdvertiserAccount(
     },
     customer_info: {
       registered_area: payload.registeredArea,
+      company: {
+        company_name: payload.companyName,
+        company_email: payload.companyEmail,
+        company_phone: payload.companyPhone,
+        company_address: payload.companyAddress,
+        company_city: payload.companyCity,
+        company_state: payload.companyState,
+        company_zip_code: payload.companyZipCode,
+        company_country: payload.registeredArea,
+      },
     },
   }
-  // Qualificacao (ex.: CNPJ no Brasil) so vai quando informada.
   if (payload.licenseNo) {
     body.qualification_info = { license_no: payload.licenseNo }
   }
@@ -223,6 +232,46 @@ export type CreateAdvertiserPayload = {
   timezone: string
   registeredArea: string
   licenseNo?: string
+  companyName: string
+  companyEmail: string
+  companyPhone: string
+  companyAddress: string
+  companyCity: string
+  companyState: string
+  companyZipCode: string
+}
+
+export type TikTokFinanceSnapshot = {
+  advertiser_id: string
+  balance?: number
+  cash?: number
+  total_cost?: number
+  currency?: string
+  transactions: unknown[]
+  costs: unknown[]
+  budget_changes: unknown[]
+  invoices: unknown[]
+}
+
+export async function getAdvertiserFinance(advertiserId: string, accessToken?: string) {
+  const base = { advertiser_id: advertiserId, page: "1", page_size: "50" }
+  const [transactions, costs, budgetChanges, invoices] = await Promise.all([
+    tiktokFetch<{ list?: unknown[] }>("/bc/account/transaction/get/", { query: base, accessToken }),
+    tiktokFetch<{ list?: unknown[] }>("/bc/account/cost/get/", { query: base, accessToken }),
+    tiktokFetch<{ list?: unknown[] }>("/bc/account/budget/changelog/get/", { query: base, accessToken }),
+    tiktokFetch<{ list?: unknown[] }>("/bc/invoice/billing_report/get/", { query: base, accessToken }),
+  ])
+  const info = await getAdvertiserInfo([advertiserId], accessToken)
+  const account = info.list?.[0]
+  return {
+    advertiser_id: advertiserId,
+    balance: account?.balance ?? 0,
+    currency: account?.currency,
+    transactions: transactions.list ?? [],
+    costs: costs.list ?? [],
+    budget_changes: budgetChanges.list ?? [],
+    invoices: invoices.list ?? [],
+  } satisfies TikTokFinanceSnapshot
 }
 
 export type TikTokAdvertiser = {

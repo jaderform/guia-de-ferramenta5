@@ -60,6 +60,13 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
   const [timezone, setTimezone] = useState("America/Sao_Paulo")
   const [registeredArea, setRegisteredArea] = useState("BR")
   const [licenseNo, setLicenseNo] = useState("")
+  const [companyName, setCompanyName] = useState("")
+  const [companyEmail, setCompanyEmail] = useState("")
+  const [companyPhone, setCompanyPhone] = useState("")
+  const [companyAddress, setCompanyAddress] = useState("")
+  const [companyCity, setCompanyCity] = useState("")
+  const [companyState, setCompanyState] = useState("")
+  const [companyZipCode, setCompanyZipCode] = useState("")
 
   const [submitting, setSubmitting] = useState(false)
   const [results, setResults] = useState<CreateResult[] | null>(null)
@@ -91,6 +98,13 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
           timezone,
           registeredArea,
           licenseNo,
+          companyName,
+          companyEmail,
+          companyPhone,
+          companyAddress,
+          companyCity,
+          companyState,
+          companyZipCode,
         }),
       })
       const json = await res.json()
@@ -300,6 +314,20 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
                     placeholder="00.000.000/0001-00"
                   />
                 </Field>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="mb-3 text-sm font-medium">Dados da empresa</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field><FieldLabel htmlFor="company-name">Nome da empresa</FieldLabel><Input id="company-name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required /></Field>
+                  <Field><FieldLabel htmlFor="company-email">E-mail</FieldLabel><Input id="company-email" type="email" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} required /></Field>
+                  <Field><FieldLabel htmlFor="company-phone">Telefone</FieldLabel><Input id="company-phone" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} required /></Field>
+                  <Field><FieldLabel htmlFor="company-zip">CEP</FieldLabel><Input id="company-zip" value={companyZipCode} onChange={(e) => setCompanyZipCode(e.target.value)} required /></Field>
+                  <Field className="col-span-2"><FieldLabel htmlFor="company-address">Endereço</FieldLabel><Input id="company-address" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} required /></Field>
+                  <Field><FieldLabel htmlFor="company-city">Cidade</FieldLabel><Input id="company-city" value={companyCity} onChange={(e) => setCompanyCity(e.target.value)} required /></Field>
+                  <Field><FieldLabel htmlFor="company-state">Estado</FieldLabel><Input id="company-state" value={companyState} onChange={(e) => setCompanyState(e.target.value)} required /></Field>
+                </div>
+                <FieldDescription className="mt-2">Esses dados são exigidos pelo TikTok para criar contas dentro do Business Center.</FieldDescription>
               </div>
 
               {formError && (
