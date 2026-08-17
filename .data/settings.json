@@ -1,3 +1,7 @@
 {
-  "tiktokAppId": "7412345678901234567"
+  "tiktokAppId": "7999888777",
+  "tiktokAppSecret": "secret_abc123def456",
+  "tiktokClientKey": "awtestclientkey",
+  "tiktokClientSecret": "clientsecret789",
+  "tiktokRedirectUri": "https://exemplo.com/api/tiktok/callback"
 }
