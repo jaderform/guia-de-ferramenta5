@@ -77,7 +77,8 @@ export async function POST(request: Request) {
         contactEmail: contactEmail?.trim() || undefined,
         contactPhone: contactPhone?.trim() || undefined,
       })
-      results.push({ name, success: true, advertiser_id: data.advertiser_id })
+      const accountId = data.advertiser_id ?? data.oa_id ?? data.id
+      results.push({ name, success: true, advertiser_id: accountId })
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido"
       results.push({ name, success: false, error: message })

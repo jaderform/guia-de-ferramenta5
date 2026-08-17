@@ -172,8 +172,8 @@ export async function getBusinessCenters(accessToken?: string) {
 }
 
 /**
- * Cria uma conta de anuncio dentro de um Business Center.
- * Endpoint oficial: POST /bc/advertiser/create/
+ * Cria uma Organization Account dentro de um Business Center.
+ * Endpoint aprovado no app: POST /bc/oa/create/
  */
 export async function createAdvertiserAccount(
   payload: CreateAdvertiserPayload,
@@ -186,19 +186,20 @@ export async function createAdvertiserAccount(
       currency: payload.currency,
       timezone: payload.timezone,
     },
-    contact_info: {
-      name: payload.contactName,
-      email: payload.contactEmail,
-      phone: payload.contactPhone,
-    },
   }
-  return tiktokFetch<{ advertiser_id: string }>("/bc/advertiser/create/", {
-    method: "POST",
-    body,
-    accessToken,
-  })
-}
 
+  const contactInfo = {
+    name: payload.contactName,
+    email: payload.contactEmail,
+    phone: payload.contactPhone,
+  }
+  if (Object.values(contactInfo).some(Boolean)) body.contact_info = contactInfo
+
+  return tiktokFetch<{ advertiser_id?: string; oa_id?: string; id?: string }>(
+    '/bc/oa/create/',
+    { method: 'POST', body, accessToken },
+  )
+}
 type RawBusinessCenter = {
   bc_id?: string
   name?: string

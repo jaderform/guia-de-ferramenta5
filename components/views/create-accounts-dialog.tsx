@@ -122,9 +122,9 @@ export function CreateAccountsDialog({ onCreated }: { onCreated?: () => void }) 
           <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Sparkles className="size-4" />
           </div>
-          <DialogTitle>Criar contas de anúncio em massa</DialogTitle>
+          <DialogTitle>Criar contas em massa no Business Center</DialogTitle>
           <DialogDescription>
-            Cria contas reais dentro do Business Center via API oficial do TikTok for Business.
+            Cria Organization Accounts usando o endpoint aprovado /bc/oa/create/ do TikTok for Business.
           </DialogDescription>
         </DialogHeader>
 
