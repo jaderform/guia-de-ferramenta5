@@ -10,12 +10,12 @@ export const runtime = "nodejs"
 export async function GET(request: Request) {
   try {
     // O redirect precisa bater exatamente com o registrado no painel do TikTok.
-    const configured = getConfiguredRedirectUri()
+    const configured = await getConfiguredRedirectUri()
     const origin = new URL(request.url).origin
     const redirectUri = configured ?? origin
 
     const state = crypto.randomUUID()
-    const authUrl = buildContentAuthUrl(state, redirectUri)
+    const authUrl = await buildContentAuthUrl(state, redirectUri)
 
     const res = NextResponse.redirect(authUrl)
     res.cookies.set(contentStateCookieName, state, {

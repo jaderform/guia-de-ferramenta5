@@ -4,7 +4,7 @@ import { buildAuthUrl, oauthStateCookieName } from "@/lib/tiktok-api"
 export async function GET() {
   try {
     const state = crypto.randomUUID()
-    const url = buildAuthUrl(state)
+    const url = await buildAuthUrl(state)
     const res = NextResponse.redirect(url)
     res.cookies.set(oauthStateCookieName, state, {
       httpOnly: true,

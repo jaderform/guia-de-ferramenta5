@@ -1,5 +1,6 @@
 import "server-only"
 import { cookies } from "next/headers"
+import { getContentClientCredentials } from "@/lib/settings-store"
 
 /**
  * Cliente server-side para o TikTok Content Posting API / Login Kit (OAuth v2).
@@ -28,18 +29,20 @@ export const CONTENT_SCOPES = [
   "video.upload",
 ]
 
-export function getContentCredentials() {
-  const clientKey = process.env.TIKTOK_CLIENT_KEY
-  const clientSecret = process.env.TIKTOK_CLIENT_SECRET
-  const redirectUri = process.env.TIKTOK_REDIRECT_URI
+/**
+ * Le as credenciais do Content Posting. Prioriza o que o admin salvou no
+ * painel, com fallback para as variaveis de ambiente.
+ */
+export async function getContentCredentials() {
+  const { clientKey, clientSecret, redirectUri } = await getContentClientCredentials()
   if (!clientKey || !clientSecret) {
     throw new Error("TIKTOK_CLIENT_KEY e TIKTOK_CLIENT_SECRET nao configurados")
   }
   return { clientKey, clientSecret, redirectUri }
 }
 
-function resolveRedirectUri(explicit?: string) {
-  const { redirectUri } = getContentCredentials()
+async function resolveRedirectUri(explicit?: string) {
+  const { redirectUri } = await getContentCredentials()
   const value = explicit ?? redirectUri
   if (!value) return undefined
   try {
@@ -55,8 +58,8 @@ function resolveRedirectUri(explicit?: string) {
 }
 
 /** Monta a URL de autorizacao v2 (client_key). */
-export function buildContentAuthUrl(state: string, redirectUri: string) {
-  const { clientKey } = getContentCredentials()
+export async function buildContentAuthUrl(state: string, redirectUri: string) {
+  const { clientKey } = await getContentCredentials()
   const params = new URLSearchParams({
     client_key: clientKey,
     scope: CONTENT_SCOPES.join(","),
@@ -67,7 +70,7 @@ export function buildContentAuthUrl(state: string, redirectUri: string) {
   return `${AUTHORIZE_URL}?${params.toString()}`
 }
 
-export function getConfiguredRedirectUri() {
+export async function getConfiguredRedirectUri() {
   return resolveRedirectUri()
 }
 
@@ -82,7 +85,7 @@ export type ContentTokenResponse = {
 
 /** Troca o code do OAuth v2 por access_token + refresh_token. */
 export async function exchangeContentCode(code: string, redirectUri: string) {
-  const { clientKey, clientSecret } = getContentCredentials()
+  const { clientKey, clientSecret } = await getContentCredentials()
   const res = await fetch(TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -104,7 +107,7 @@ export async function exchangeContentCode(code: string, redirectUri: string) {
 
 /** Renova o access_token usando o refresh_token. */
 export async function refreshContentToken(refreshToken: string) {
-  const { clientKey, clientSecret } = getContentCredentials()
+  const { clientKey, clientSecret } = await getContentCredentials()
   const res = await fetch(TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

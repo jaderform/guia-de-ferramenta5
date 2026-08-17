@@ -1,5 +1,6 @@
 import "server-only"
 import { cookies } from "next/headers"
+import { getMarketingCredentials } from "@/lib/settings-store"
 
 /**
  * Cliente server-side para a API oficial do TikTok for Business (Marketing API v1.3).
@@ -12,10 +13,12 @@ const TIKTOK_AUTH_PORTAL = "https://business-api.tiktok.com/portal/auth"
 const ACCESS_TOKEN_COOKIE = "tiktok_access_token"
 const OAUTH_STATE_COOKIE = "tiktok_oauth_state"
 
-export function getAppCredentials() {
-  const appId = process.env.TIKTOK_APP_ID
-  const secret = process.env.TIKTOK_APP_SECRET
-  const redirectUri = process.env.TIKTOK_REDIRECT_URI
+/**
+ * Le as credenciais da Marketing API. Prioriza o que o admin salvou no painel,
+ * com fallback para as variaveis de ambiente.
+ */
+export async function getAppCredentials() {
+  const { appId, secret, redirectUri } = await getMarketingCredentials()
   if (!appId || !secret) {
     throw new Error("TIKTOK_APP_ID e TIKTOK_APP_SECRET nao configurados")
   }
@@ -43,8 +46,8 @@ function sanitizeRedirectUri(value?: string) {
 }
 
 /** Monta a URL de autorizacao do portal do TikTok. */
-export function buildAuthUrl(state: string) {
-  const { appId, redirectUri } = getAppCredentials()
+export async function buildAuthUrl(state: string) {
+  const { appId, redirectUri } = await getAppCredentials()
   const params = new URLSearchParams({
     app_id: appId,
     state,
@@ -59,7 +62,7 @@ export const accessTokenCookieName = ACCESS_TOKEN_COOKIE
 
 /** Troca o auth_code recebido no callback por um access_token de longa duracao. */
 export async function exchangeCodeForToken(authCode: string) {
-  const { appId, secret } = getAppCredentials()
+  const { appId, secret } = await getAppCredentials()
   const res = await fetch(`${TIKTOK_API_BASE}/oauth2/access_token/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -125,7 +128,7 @@ export async function tiktokFetch<T = unknown>(
 
 /** Lista as contas de anuncio autorizadas para o app. */
 export async function getAuthorizedAdvertisers(accessToken?: string) {
-  const { appId, secret } = getAppCredentials()
+  const { appId, secret } = await getAppCredentials()
   return tiktokFetch<{ list: { advertiser_id: string; advertiser_name: string }[] }>(
     "/oauth2/advertiser/get/",
     { query: { app_id: appId, secret }, accessToken },

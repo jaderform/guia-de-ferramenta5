@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/page-header"
+import { ApiCredentialsCard } from "@/components/views/api-credentials-card"
 import { CreateUserDialog } from "@/components/views/create-user-dialog"
 import { useAdminUsers, type AdminUser } from "@/hooks/use-admin-users"
 import { Badge } from "@/components/ui/badge"
@@ -315,6 +316,8 @@ export function AdminView() {
           </div>
         </CardContent>
       </Card>
+
+      <ApiCredentialsCard />
     </div>
   )
 }
