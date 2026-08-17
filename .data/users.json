@@ -1,0 +1,22 @@
+[
+  {
+    "id": "998a0a34-97b6-44df-ad68-3056f81de80b",
+    "email": "jaderform@gmail.com",
+    "name": "Administrador",
+    "role": "admin",
+    "passwordHash": "5961f557ce4eabb84a6eadebf168c39d:c83c93840d83e84a96df70edce7ba23a893b7a7d33320938cf0a537db09cef1e2da6933c8a6bc366b5237baf3171254ea3f241fbe8752a2994ba24b6336b2454",
+    "status": "active",
+    "expiresAt": null,
+    "createdAt": "2026-08-17T13:53:45.593Z"
+  },
+  {
+    "id": "1d2ad247-1717-417b-b26f-6f067feeedf4",
+    "email": "cliente@teste.com",
+    "name": "Cliente Teste",
+    "role": "user",
+    "passwordHash": "2d32d9967b6f1f5d3dcac7b6b8f38c85:4de0488833d876fcbab79d34ec75b891ce12d85c85eb36feeadb97c37b497a1859daecf814f64653657a3c15641bd6beb0ca5bf34b08e05c5998ba186dd07ab5",
+    "status": "active",
+    "expiresAt": "2026-09-16T13:54:00.329Z",
+    "createdAt": "2026-08-17T13:54:00.385Z"
+  }
+]
