@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { AlertCircle, RefreshCw, Search } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
+import { CreateAccountsDialog } from "@/components/views/create-accounts-dialog"
 import { ConnectTikTokBanner } from "@/components/connect-tiktok"
 import { useAdvertisers, useTikTokStatus } from "@/hooks/use-tiktok"
 import { Badge } from "@/components/ui/badge"
@@ -49,10 +50,13 @@ export function AccountsView() {
       description="Contas de anúncio autorizadas via API oficial do TikTok for Business."
       action={
         connected ? (
-          <Button variant="outline" onClick={() => refresh()}>
-            <RefreshCw data-icon="inline-start" />
-            Atualizar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => refresh()}>
+              <RefreshCw data-icon="inline-start" />
+              Atualizar
+            </Button>
+            <CreateAccountsDialog onCreated={() => refresh()} />
+          </div>
         ) : undefined
       }
     />

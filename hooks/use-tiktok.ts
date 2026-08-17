@@ -1,7 +1,7 @@
 "use client"
 
 import useSWR from "swr"
-import type { TikTokAdvertiser } from "@/lib/tiktok-api"
+import type { BusinessCenter, TikTokAdvertiser } from "@/lib/tiktok-api"
 
 const fetcher = async (url: string) => {
   const res = await fetch(url)
@@ -33,6 +33,19 @@ export function useAdvertisers(enabled: boolean) {
   )
   return {
     advertisers: data?.advertisers ?? [],
+    error: error as (Error & { status?: number }) | undefined,
+    isLoading,
+    refresh: mutate,
+  }
+}
+
+export function useBusinessCenters(enabled: boolean) {
+  const { data, error, isLoading, mutate } = useSWR<{ businessCenters: BusinessCenter[] }>(
+    enabled ? "/api/tiktok/business-centers" : null,
+    fetcher,
+  )
+  return {
+    businessCenters: data?.businessCenters ?? [],
     error: error as (Error & { status?: number }) | undefined,
     isLoading,
     refresh: mutate,

@@ -152,6 +152,79 @@ export async function createCampaign(payload: CreateCampaignPayload, accessToken
   })
 }
 
+/** Lista os Business Centers aos quais o usuario autorizado tem acesso. */
+export async function getBusinessCenters(accessToken?: string) {
+  const data = await tiktokFetch<{ list: RawBusinessCenter[] }>("/bc/get/", {
+    query: { page: "1", page_size: "50" },
+    accessToken,
+  })
+  return data.list
+    .map((item) => {
+      const info = item.bc_info ?? item
+      return {
+        bc_id: String(info.bc_id ?? ""),
+        name: String(info.name ?? "Business Center"),
+        currency: info.currency,
+        timezone: info.timezone,
+      }
+    })
+    .filter((bc) => bc.bc_id)
+}
+
+/**
+ * Cria uma conta de anuncio dentro de um Business Center.
+ * Endpoint oficial: POST /bc/advertiser/create/
+ */
+export async function createAdvertiserAccount(
+  payload: CreateAdvertiserPayload,
+  accessToken?: string,
+) {
+  const body: Record<string, unknown> = {
+    bc_id: payload.bcId,
+    advertiser_info: {
+      name: payload.name,
+      currency: payload.currency,
+      timezone: payload.timezone,
+    },
+    customer_info: {
+      registered_area: payload.registeredArea,
+    },
+  }
+  // Qualificacao (ex.: CNPJ no Brasil) so vai quando informada.
+  if (payload.licenseNo) {
+    body.qualification_info = { license_no: payload.licenseNo }
+  }
+  return tiktokFetch<{ advertiser_id: string }>("/bc/advertiser/create/", {
+    method: "POST",
+    body,
+    accessToken,
+  })
+}
+
+type RawBusinessCenter = {
+  bc_id?: string
+  name?: string
+  currency?: string
+  timezone?: string
+  bc_info?: { bc_id?: string; name?: string; currency?: string; timezone?: string }
+}
+
+export type BusinessCenter = {
+  bc_id: string
+  name: string
+  currency?: string
+  timezone?: string
+}
+
+export type CreateAdvertiserPayload = {
+  bcId: string
+  name: string
+  currency: string
+  timezone: string
+  registeredArea: string
+  licenseNo?: string
+}
+
 export type TikTokAdvertiser = {
   advertiser_id: string
   name: string
