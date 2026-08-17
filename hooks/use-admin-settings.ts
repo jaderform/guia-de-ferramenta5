@@ -12,7 +12,7 @@ export type SettingKey =
 export type SettingStatus = {
   key: SettingKey
   configured: boolean
-  source: "custom" | "env" | "none"
+  source: "env" | "none"
   preview: string | null
 }
 

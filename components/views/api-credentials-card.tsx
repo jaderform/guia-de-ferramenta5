@@ -1,21 +1,18 @@
 "use client"
 
+import { KeyRound, RefreshCw, ShieldCheck, ShieldAlert, Copy, Check } from "lucide-react"
 import { useState } from "react"
-import { KeyRound, RefreshCw, ShieldCheck, ShieldAlert, Save } from "lucide-react"
 import { toast } from "sonner"
 import { useAdminSettings, type SettingKey, type SettingStatus } from "@/hooks/use-admin-settings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 
 type FieldDef = {
   key: SettingKey
   label: string
-  placeholder: string
-  secret?: boolean
+  envVar: string
   description?: string
 }
 
@@ -23,14 +20,14 @@ const MARKETING_FIELDS: FieldDef[] = [
   {
     key: "tiktokAppId",
     label: "App ID (Marketing API)",
-    placeholder: "Ex: 7xxxxxxxxxxxxxxxxx",
+    envVar: "TIKTOK_APP_ID",
     description: "ID do app criado no TikTok for Business / Marketing API.",
   },
   {
     key: "tiktokAppSecret",
     label: "App Secret (Marketing API)",
-    placeholder: "Cole o secret do app",
-    secret: true,
+    envVar: "TIKTOK_APP_SECRET",
+    description: "Secret do app da Marketing API.",
   },
 ]
 
@@ -38,14 +35,14 @@ const CONTENT_FIELDS: FieldDef[] = [
   {
     key: "tiktokClientKey",
     label: "Client Key (Content Posting)",
-    placeholder: "Ex: awxxxxxxxxxxxx",
+    envVar: "TIKTOK_CLIENT_KEY",
     description: "Chave do app da TikTok Developers usada para postar conteúdo orgânico.",
   },
   {
     key: "tiktokClientSecret",
     label: "Client Secret (Content Posting)",
-    placeholder: "Cole o client secret",
-    secret: true,
+    envVar: "TIKTOK_CLIENT_SECRET",
+    description: "Client secret do app de Content Posting.",
   },
 ]
 
@@ -53,7 +50,7 @@ const SHARED_FIELDS: FieldDef[] = [
   {
     key: "tiktokRedirectUri",
     label: "Redirect URI",
-    placeholder: "https://seudominio.com/api/tiktok/callback",
+    envVar: "TIKTOK_REDIRECT_URI",
     description: "Deve ser idêntica à URL de callback cadastrada no painel do TikTok.",
   },
 ]
@@ -66,82 +63,18 @@ function SourceBadge({ status }: { status?: SettingStatus }) {
   if (!status || !status.configured) {
     return (
       <Badge variant="secondary" className="text-muted-foreground">
-        Não configurado
+        Não configurada
       </Badge>
     )
   }
-  if (status.source === "custom") {
-    return <Badge className="bg-emerald-500/15 text-emerald-600">Salvo no painel</Badge>
-  }
-  return (
-    <Badge variant="secondary" className="text-sky-600">
-      Variável de ambiente
-    </Badge>
-  )
+  return <Badge className="bg-emerald-500/15 text-emerald-600">Configurada</Badge>
 }
 
 export function ApiCredentialsCard() {
   const { settings, error, isLoading, refresh } = useAdminSettings()
-  const [values, setValues] = useState<Partial<Record<SettingKey, string>>>({})
-  const [saving, setSaving] = useState(false)
 
   const allFields = [...MARKETING_FIELDS, ...CONTENT_FIELDS, ...SHARED_FIELDS]
   const configuredCount = settings.filter((s) => s.configured).length
-
-  function setValue(key: SettingKey, value: string) {
-    setValues((prev) => ({ ...prev, [key]: value }))
-  }
-
-  async function handleSave() {
-    const patch: Partial<Record<SettingKey, string>> = {}
-    for (const field of allFields) {
-      const v = values[field.key]
-      if (typeof v === "string" && v.trim()) patch[field.key] = v.trim()
-    }
-    if (Object.keys(patch).length === 0) {
-      toast.error("Preencha ao menos um campo para salvar")
-      return
-    }
-    setSaving(true)
-    try {
-      const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (res.ok) {
-        toast.success("Credenciais salvas")
-        setValues({})
-        refresh()
-      } else {
-        toast.error("Não foi possível salvar", { description: data.error })
-      }
-    } catch {
-      toast.error("Erro de rede ao salvar credenciais")
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function handleClear(key: SettingKey, label: string) {
-    if (!confirm(`Limpar a credencial "${label}"?`)) return
-    try {
-      const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: null }),
-      })
-      if (res.ok) {
-        toast.success("Credencial removida")
-        refresh()
-      } else {
-        toast.error("Não foi possível remover")
-      }
-    } catch {
-      toast.error("Erro de rede")
-    }
-  }
 
   if (error) {
     return null
@@ -157,17 +90,13 @@ export function ApiCredentialsCard() {
           <div className="flex flex-col gap-1">
             <CardTitle>Credenciais das APIs do TikTok</CardTitle>
             <CardDescription>
-              Configure as chaves de integração usadas por toda a plataforma. Os segredos ficam
-              guardados no servidor e nunca são exibidos por completo.
+              As chaves de integração são lidas das variáveis de ambiente do projeto. Adicione ou
+              atualize os valores em Configurações do projeto → Environment Variables e faça um novo
+              deploy para aplicá-las.
             </CardDescription>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => refresh()}
-          aria-label="Atualizar status"
-        >
+        <Button variant="outline" size="icon" onClick={() => refresh()} aria-label="Atualizar status">
           <RefreshCw />
         </Button>
       </CardHeader>
@@ -182,47 +111,19 @@ export function ApiCredentialsCard() {
           <span className="text-muted-foreground">
             {isLoading
               ? "Carregando status..."
-              : `${configuredCount} de ${allFields.length} credenciais configuradas`}
+              : `${configuredCount} de ${allFields.length} variáveis configuradas`}
           </span>
         </div>
 
-        <CredentialGroup
-          title="Marketing API (Anúncios)"
-          fields={MARKETING_FIELDS}
-          settings={settings}
-          values={values}
-          onChange={setValue}
-          onClear={handleClear}
-        />
+        <CredentialGroup title="Marketing API (Anúncios)" fields={MARKETING_FIELDS} settings={settings} />
 
         <Separator />
 
-        <CredentialGroup
-          title="Content Posting API (Orgânico)"
-          fields={CONTENT_FIELDS}
-          settings={settings}
-          values={values}
-          onChange={setValue}
-          onClear={handleClear}
-        />
+        <CredentialGroup title="Content Posting API (Orgânico)" fields={CONTENT_FIELDS} settings={settings} />
 
         <Separator />
 
-        <CredentialGroup
-          title="Configuração compartilhada"
-          fields={SHARED_FIELDS}
-          settings={settings}
-          values={values}
-          onChange={setValue}
-          onClear={handleClear}
-        />
-
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving}>
-            <Save data-icon="inline-start" />
-            {saving ? "Salvando..." : "Salvar credenciais"}
-          </Button>
-        </div>
+        <CredentialGroup title="Configuração compartilhada" fields={SHARED_FIELDS} settings={settings} />
       </CardContent>
     </Card>
   )
@@ -232,16 +133,10 @@ function CredentialGroup({
   title,
   fields,
   settings,
-  values,
-  onChange,
-  onClear,
 }: {
   title: string
   fields: FieldDef[]
   settings: SettingStatus[]
-  values: Partial<Record<SettingKey, string>>
-  onChange: (key: SettingKey, value: string) => void
-  onClear: (key: SettingKey, label: string) => void
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -250,39 +145,52 @@ function CredentialGroup({
         {fields.map((field) => {
           const status = statusFor(settings, field.key)
           return (
-            <Field key={field.key}>
+            <div key={field.key} className="flex flex-col gap-2 rounded-lg border p-4">
               <div className="flex items-center justify-between gap-2">
-                <FieldLabel htmlFor={`cred-${field.key}`}>{field.label}</FieldLabel>
+                <span className="text-sm font-medium text-foreground">{field.label}</span>
                 <SourceBadge status={status} />
               </div>
-              <Input
-                id={`cred-${field.key}`}
-                type={field.secret ? "password" : "text"}
-                autoComplete="off"
-                placeholder={
-                  status?.configured && status.preview
-                    ? `Atual: ${status.preview}`
-                    : field.placeholder
-                }
-                value={values[field.key] ?? ""}
-                onChange={(e) => onChange(field.key, e.target.value)}
-              />
+
+              <EnvVarChip name={field.envVar} />
+
+              {status?.configured && status.preview ? (
+                <p className="font-mono text-xs text-muted-foreground">Valor atual: {status.preview}</p>
+              ) : null}
+
               {field.description ? (
-                <FieldDescription>{field.description}</FieldDescription>
+                <p className="text-xs text-muted-foreground">{field.description}</p>
               ) : null}
-              {status?.source === "custom" ? (
-                <button
-                  type="button"
-                  onClick={() => onClear(field.key, field.label)}
-                  className="w-fit text-xs text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
-                >
-                  Limpar valor salvo
-                </button>
-              ) : null}
-            </Field>
+            </div>
           )
         })}
       </div>
     </div>
+  )
+}
+
+function EnvVarChip({ name }: { name: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(name)
+      setCopied(true)
+      toast.success(`Copiado: ${name}`)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      toast.error("Não foi possível copiar")
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="flex w-fit items-center gap-1.5 rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
+      aria-label={`Copiar nome da variável ${name}`}
+    >
+      {copied ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+      {name}
+    </button>
   )
 }
